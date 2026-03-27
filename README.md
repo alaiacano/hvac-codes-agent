@@ -1,51 +1,57 @@
-This is a claude code agent that is able to decipher and produce Mitsubishi mini split IR remote programming codes. It uses the sonnet model which should be sufficient.
+# Mitsubishi Mini-Split IR Codes for Homebridge + Broadlink
 
-This is useful for configuring the [Homebridge Broadlink RM](https://github.com/lprhodes/homebridge-broadlink-rm) plugin for Homebridge, allowing you to control your split units with HomeKit. 
+This repo contains a [Claude Code](https://claude.ai/code) agent that generates and decodes Mitsubishi mini-split IR codes in Broadlink hex format, for use with the [homebridge-broadlink-rm-pro](https://github.com/kiwi-cam/homebridge-broadlink-rm) plugin.
 
-I won't summarize the full setup yet, but it's roughly:
-
-```
-iPhone (Home app) -> Homebridge -> BroadLink RM4 Mini IR Universal Remote Control -> Mitsubishi Split Unit
-```
-
-I've only tested it with thie `12,000 BTU Mitsubishi M-Series 17.2 SEER2 Single Zone Floor Mount Mini Split Heat Pump System - R454B | SUZ-AA12NL / MFZ-KX12NL` units.
-
-Example interaction:
+The overall control chain looks like this:
 
 ```
-> can you decode this mitsubishi hex code for me? use the remote-programmer agent. 26005a0270390e2b0e2b0e0e0e0e0e0e0e2b0e0e0e0e0e2b0e2b0e0e0e2b0e0e 
-0e0e0e2b0e2b0e0e0e2b0e2b0e0e0e0e0e2b0e0e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0e0e0e0 
-e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e2b0e2b0e2b0e0e0e2b0e2b0e0e0e2b0e2b0e2b0e 
-2b0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0e0e0 
-e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e2b0e0e0e2b0e2b0e0e0e2b0e0e0e00047d70390e2b0e2b0e0e0e0e0e0e0e2b0e0e0e0e0e2b0e2b0e0e0e2b 
-0e0e0e0e0e2b0e2b0e0e0e2b0e2b0e0e0e0e0e2b0e0e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0e0 
-e0e0e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e2b0e2b0e2b0e0e0e2b0e2b0e0e0e2b0e2b0e 
-2b0e2b0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0e0e0e0e0e0e0e2b0e0e0e0e0 
-e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e2b0e2b0e0e0e2b0e2b0e0e0e2b0e0e0e0d050000000000000000000000                             
-
-⏺ remote-programmer(Decode Mitsubishi IR hex code)
-  ⎿  Done (1 tool use · 11.2k tokens · 32s)
-  (ctrl+o to expand)
-
-⏺ Here's what the decoded code represents:
-
-  ┌────────────────────────┬────────────────┐
-  │        Setting         │     Value      │
-  ├────────────────────────┼────────────────┤
-  │ Power                  │ ON             │
-  ├────────────────────────┼────────────────┤
-  │ Mode                   │ Heat           │
-  ├────────────────────────┼────────────────┤
-  │ Temperature            │ 20°C (68°F)    │
-  ├────────────────────────┼────────────────┤
-  │ Fan Speed              │ Auto           │
-  ├────────────────────────┼────────────────┤
-  │ Vane (vertical)        │ Closed/fixed   │
-  ├────────────────────────┼────────────────┤
-  │ Wide Vane (horizontal) │ Default/center │
-  └────────────────────────┴────────────────┘
-
-  The frame was transmitted twice (standard for Mitsubishi IR) and both copies match — it's a clean capture.
+iPhone (Home app) → Homebridge → Broadlink RM4 Mini → Mitsubishi split unit
 ```
 
-You can also ask it to produce a full Homebridge Broadlink configuration file, given a small number of codes. See the Homebridge Broadlink plugin docs for details on how to do that.
+---
+
+## What the Agent Does
+
+The `remote-programmer` agent can:
+
+- **Decode** a captured Broadlink hex code and tell you the mode, temperature, fan speed, and vane settings
+- **Validate** captures and flag inconsistencies between them
+- **Synthesize** codes for every temperature in a range from a single good capture
+- **Generate** a complete `heater-cooler` config block for homebridge-broadlink-rm-pro
+
+All you need to get started is one or two captured IR codes from your remote (one per mode: heat and cool). The agent handles the rest.
+
+---
+
+## Getting Started
+
+1. Install [Claude Code](https://claude.ai/code)
+2. Clone this repo and open it in Claude Code
+3. Capture a raw IR code from your Mitsubishi remote using the [Broadlink app](https://www.ibroadlink.com/app/) or [`python-broadlink`](https://github.com/mjg59/python-broadlink)
+4. Paste the hex code into Claude Code and ask the agent to decode it or generate a full config:
+
+```
+> use the remote-programmer agent to decode this code: 26005a0270390e2b...
+
+> use the remote-programmer agent to generate a full homebridge heater-cooler
+  config from this heat code and this cool code: ...
+```
+
+The agent will ask for anything else it needs (temperature ranges, Broadlink device IP, accessory name, etc.).
+
+---
+
+## What's in This Repo
+
+- `.claude/agents/remote-programmer.md` — the agent definition and protocol reference
+- `.claude/agents/remote-programmer/decode_broadlink.py` — script the agent uses to decode captures
+- `.claude/agents/remote-programmer/generate_codes.py` — script the agent uses to synthesize codes and emit Homebridge config
+- `codes/` — example generated configs for Mitsubishi floor-mount units (`MFZ-KX12NL`)
+
+---
+
+## Resources
+
+- [homebridge-broadlink-rm-pro](https://github.com/kiwi-cam/homebridge-broadlink-rm) — Homebridge plugin
+- [python-broadlink](https://github.com/mjg59/python-broadlink) — capture IR codes from a Broadlink device
+- [Homebridge](https://homebridge.io/) — HomeKit bridge for non-HomeKit accessories
